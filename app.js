@@ -6,8 +6,8 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var debug = require('debug')('nchat');
 
-var routes = require('./routes/index');
-var users = require('./routes/users');
+// var routes = require('./routes/index');
+// var users = require('./routes/users');
 
 var app = express();
 
@@ -20,10 +20,11 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded());
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(__dirname+'/'));
+app.use(express.static(__dirname+'/public'));
 
 //app.use('/', routes);
-app.use('/users', users);
+//app.use('/users', users);
 
 var users = {};
 
@@ -31,12 +32,13 @@ app.get('/', function(req, res){
     if(req.cookies.user == null){
         res.redirect('/signin');
     }else{
-        res.sendFile('views/index.html');
+        res.sendfile('views/index.html');
     }
 });
 
 app.get('/signin', function(req, res){
-    res.sendFile('views/signin.html');
+    console.log("req for signin");
+    res.sendfile('views/signin.html');
 });
 
 app.post('/signin', function(req, res){
@@ -61,10 +63,11 @@ app.use(function(req, res, next) {
 if (app.get('env') === 'development') {
     app.use(function(err, req, res, next) {
         res.status(err.status || 500);
-        res.render('error', {
-            message: err.message,
-            error: err
-        });
+        // res.render('error', {
+        //     message: err.message,
+        //     error: err
+        // });
+        res.send(err.message);
     });
 }
 
@@ -72,26 +75,30 @@ if (app.get('env') === 'development') {
 // no stacktraces leaked to user
 app.use(function(err, req, res, next) {
     res.status(err.status || 500);
-    res.render('error', {
-        message: err.message,
-        error: {}
-    });
+    // res.render('error', {
+    //     message: err.message,
+    //     error: {}
+    // });
+    res.send(err.message);
 });
 
-app.set('port', process.env.PORT || 3000);
+app.set('port', process.env.PORT || 80);
 
 var server = app.listen(app.get('port'), function() {
   debug('Express server listening on port ' + server.address().port);
 });
 
 var io = require('socket.io').listen(server);
-io.sockets.on('connection', function(socket){{
+io.sockets.on('connection', function(socket){
+    socket.on('online', function (data) {
+  //将上线的用户名存储为 socket 对象的属性，以区分每个 socket 对象，方便后面使用
     socket.name = data.user;
-
-    if(!users[data.user]){
+  //users 对象中不存在该用户名则插入该用户名
+    if (!users[data.user]) {
         users[data.user] = data.user;
-    }
-
-    io.sockets.emit('online', {users:users, user: data.user});
-}});
-//module.exports = app;
+     }
+  //向所有用户广播该用户上线信息
+    io.sockets.emit('online', {users: users, user: data.user});
+});
+});
+ //module.exports = app;
