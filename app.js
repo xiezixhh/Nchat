@@ -89,7 +89,11 @@ var server = app.listen(app.get('port'), function() {
 });
 
 var io = require('socket.io').listen(server);
+
+var socketClients = [];// as a storage of all clients
 io.sockets.on('connection', function(socket){
+    //socket.join('nchat');
+    socketClients.push(socket);
     socket.on('online', function (data) {
       //将上线的用户名存储为 socket 对象的属性，以区分每个 socket 对象，方便后面使用
         socket.name = data.user;
@@ -105,11 +109,11 @@ io.sockets.on('connection', function(socket){
         if(data.to == 'all'){
             socket.broadcast.emit('say', data);
         }else{
-            var clients = io.sockets.clients();
+            //var clients = io.sockets.clients('nchat');
 
-            clients.forEach(function(client){
+            socketClients.forEach(function(client){
                 if(client.name == data.to){
-                    socket.emit('say', data);
+                    client.emit('say', data);
                 }
             });
         }

@@ -39,7 +39,7 @@ $(document).ready(function(){
       $('#contents').append('<div>你(' + now() + ')对 所有人 说：<br/>' + $msg + '</div><br />');
     }
     else{
-      $('#contents').append('<div>你(' + now() + ')对'+to+' 说：<br/>' + $msg + '</div><br />')
+      $('#contents').append('<div style="color:#00f" >你(' + now() + ')对 ' + to + ' 说：<br/>' + $msg + '</div><br />')
     }
 
     socket.emit('say', {from: from, to: to, msg: $msg});
