@@ -118,5 +118,16 @@ io.sockets.on('connection', function(socket){
             });
         }
     });
+
+    socket.on('disconnect', function(){
+        if(users[socket.name]){
+            delete users[socket.name];
+            //remove the socket out of socketClients array
+            var index = socketClients.indexOf(socket);
+            socketClients.splice(index,1);
+
+            socket.broadcast.emit('offline', {users:users, user:socket.name});
+        }
+    });
 });
  //module.exports = app;
